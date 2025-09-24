@@ -18,7 +18,11 @@ API_BASE="https://api.github.com/repos/$USERNAME/$REPO"
 # Helpers
 ###############################################################################
 function usage() {
-    echo "Usage: $0 {upload|download|delete|list}"
+    echo "Usage: $0 -o {upload|download|delete|list} [-f filename]"
+    echo
+    echo "Options:"
+    echo "  -o ACTION       Action to perform (upload, download, delete, list)"
+    echo "  -f FILE         File to upload/download/delete (overrides GITHUB_FILE)"
     echo
     echo "Environment variables:"
     echo "  USERNAME        GitHub username (default: dg-cafe)"
@@ -45,22 +49,18 @@ function require_jq() {
 }
 
 function api_get() {
-    # $1: URL
     curl -s -u "$USERNAME:$GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -L "$1"
 }
 
 function api_put() {
-    # $1: URL, stdin: JSON body
     curl -s -X PUT -u "$USERNAME:$GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "$1" -d @-
 }
 
 function api_delete() {
-    # $1: URL, stdin: JSON body
     curl -s -X DELETE -u "$USERNAME:$GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "$1" -d @-
 }
 
 function get_file_sha() {
-    # echoes SHA for $GITHUB_FILE on $BRANCH (empty if missing)
     api_get "$API_BASE/contents/$GITHUB_FILE?ref=$BRANCH" | jq -r '.sha // empty'
 }
 
@@ -161,11 +161,20 @@ function list_path() {
 # Main
 ###############################################################################
 function main() {
-    if [ $# -ne 1 ]; then
+    local action=""
+
+    while getopts ":o:f:" opt; do
+        case $opt in
+            o) action="$OPTARG" ;;
+            f) GITHUB_FILE="$OPTARG" ;;
+            *) usage ;;
+        esac
+    done
+
+    if [ -z "$action" ]; then
         usage
     fi
 
-    local action="$1"
     require_token
     require_jq
 
