@@ -26,7 +26,7 @@ function usage() {
     echo
     echo "Environment variables:"
     echo "  USERNAME        GitHub username (default: dg-cafe)"
-    echo "  GITHUB_TOKEN    Fine-grained PAT (required)"
+    echo "  GITHUB_TOKEN    Fine-grained PAT (required for upload/delete)"
     echo "  BRANCH          Branch name (default: main)"
     echo "  GITHUB_FILE     File to upload/download/delete (default: my-archive.tgz)"
     echo "  GITHUB_MESSAGE  Optional commit message (default varies by action)"
@@ -48,8 +48,13 @@ function require_jq() {
     fi
 }
 
+# GET wrapper: auth only if token is set
 function api_get() {
-    curl -s -u "$USERNAME:$GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -L "$1"
+    if [ "${GITHUB_TOKEN}" = "notset" ] || [ -z "${GITHUB_TOKEN}" ]; then
+        curl -s -H "Accept: application/vnd.github+json" -L "$1"
+    else
+        curl -s -u "$USERNAME:$GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -L "$1"
+    fi
 }
 
 function api_put() {
@@ -68,6 +73,8 @@ function get_file_sha() {
 # Actions
 ###############################################################################
 function upload_file() {
+    require_token
+
     if [ ! -f "$GITHUB_FILE" ]; then
         echo "Error: local file '$GITHUB_FILE' not found"
         exit 1
@@ -114,6 +121,8 @@ function download_file() {
 }
 
 function delete_file() {
+    require_token
+
     echo "Deleting $GITHUB_FILE from $USERNAME/$REPO on branch $BRANCH..."
 
     local sha
@@ -139,13 +148,13 @@ EOF
 }
 
 function list_path() {
+    echo "Listing path '${GITHUB_PATH:-/}' in $USERNAME/$REPO on branch $BRANCH..."
     local url_path="$API_BASE/contents"
     if [ -n "$GITHUB_PATH" ]; then
         local clean_path="${GITHUB_PATH#/}"
         url_path="$url_path/$clean_path"
     fi
 
-    echo "Listing path '${GITHUB_PATH:-/}' in $USERNAME/$REPO on branch $BRANCH..."
     api_get "$url_path?ref=$BRANCH" | jq -r '
       if type=="array" then
         (["type","path","size"] | @tsv),
@@ -175,7 +184,6 @@ function main() {
         usage
     fi
 
-    require_token
     require_jq
 
     case "$action" in
@@ -188,4 +196,3 @@ function main() {
 }
 
 main "$@"
-
