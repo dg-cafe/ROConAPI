@@ -2,7 +2,7 @@
 ROCon 2025 API Class Scripts.
 
 
-> 📘 **See:** [Go to Course Goals →](./Course_Goals.md)
+> 📘 **See:** [Go to Course Goals →](./docs/01_Course_Goals.md)
 
 
 
