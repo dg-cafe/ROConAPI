@@ -1,6 +1,12 @@
 # ROConAPI
 ROCon 2025 API Class Scripts.
 
+
+> 📘 **See:** [Go to Course Goals →](./Course_Goals.md)
+
+
+
+
 # 🧩 QualysETL Initialization & Snowflake Load Guide
 
 This guide walks you through initializing **QualysETL** and loading results into **Snowflake**.  
