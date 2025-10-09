@@ -35,7 +35,7 @@ make_snowsql_executable() {
 
 run_snowsql_installer_accept_defaults() {
   # Pipe an empty line to accept defaults during installation
-  echo | bash "$SNOWSQL_VERSION"
+  SNOWSQL_DEST=$HOME/bin SNOWSQL_LOGIN_SHELL=$HOME/.profile bash $HOME/scripts/setup/$SNOWSQL_VERSION
 }
 
 final_echo() {
