@@ -16,7 +16,7 @@ Follow each step carefully in sequence.
 
 ---
 
-## ⚙️ QualysETL Initialization
+## ⚙️ QualysETL Initialization and Snowflake Loader Steps
 
 **Login:**  
 Open the `linux-api-scan` Virtual Machine tab.
